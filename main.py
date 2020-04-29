@@ -1,3 +1,4 @@
+import logging
 import os
 
 from discord.ext import commands
@@ -5,8 +6,14 @@ from discord.ext import commands
 import cogs
 
 TOKEN = os.getenv("TOKEN")
-
 bot = commands.Bot(command_prefix='!')
+bot.add_cog(cogs.AvalonBot(bot))
+
+logger = logging.getLogger('discord')
+logger.setLevel(logging.DEBUG)
+handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w+')
+handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+logger.addHandler(handler)
 
 @bot.event
 async def on_ready():
@@ -15,21 +22,8 @@ async def on_ready():
     for guild in bot.guilds:
         print(f'{guild.name} (id: {guild.id})')
 
-@bot.command(name="avalon", help="Initiates a game of Avalon")
-async def avalon(ctx):
-    await ctx.send("Initiate a game of Avalon? [Y]es/[N]o")
-    def check(message):
-        return message.author == ctx.author
-    reply = await bot.wait_for("message", check=check)
-    reply_content = reply.content.lower()
-    if reply_content == "y" or reply_content == "yes":
-        await ctx.send("The game initiates! Type `!join` to join the game.\nPlayer slots: 1 / 10")
-        bot.add_cog(cogs.Avalon(bot, ctx, ctx.author))
-    else:
-        await ctx.send("Another day then.")
-
 @bot.event
 async def on_command_error(ctx, error):
-   pass
+    pass
 
 bot.run(TOKEN)

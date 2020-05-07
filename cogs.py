@@ -15,7 +15,7 @@ class AvalonBot(commands.Cog):
         
     @commands.command()
     async def avalon(self, ctx):
-        """start | Initiate game of Avalon: """
+        """!avalon | Initiate a game of Avalon: """
         if ctx.author not in self.players:
             game_id = "".join([random.choice(string.ascii_lowercase) for n in range(4)])
             while game_id in self.games:
@@ -29,7 +29,6 @@ class AvalonBot(commands.Cog):
     @commands.command()
     async def join(self, ctx, game_id):
         """!join <game_id> | Join initiated game"""
-        self.players[ctx.author] = game_id
         await self.games[game_id].join(ctx)
 
     @commands.command()

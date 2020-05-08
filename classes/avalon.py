@@ -17,11 +17,18 @@ class Avalon(object):
         self.lobby = Lobby(self)
 
         self.roles = [0, 1] # Merlin, Assassin
-        self.ROLE_DICT = {"merlin": 0, "assassin": 1, "mordred": 2, "percival": 3, "morgana": 4, "oberon": 5} # loyal servant: -3, mordred minion: -1
+        self.ROLE_DICT = {"merlin": 0, "assassin": 1, "mordred": 2,
+            "percival": 3, "morgana": 4, "oberon": 5}
+        self.REVERSE_ROLE_DICT = {-3: "a Loyal Servant of Arthur",
+            -1: "a Minion of Mordred", 0: "Merlin", 1: "Assassin",
+            2: "Mordred", 3: "Percival", 4: "Morgana", 5: "Oberon"}
         self.role_config = {}
         self.players = []
 
         self.quests = []
+        self.QUEST_DICT = {3: [1, 2, 2, 1, 2], 5: [2, 3, 2, 3, 3],
+            6: [2, 3, 4, 3, 4], 7: [2, 3, 3, 4, 4], 8: [3, 4, 4, 5, 5],
+            9: [3, 4, 4, 5, 5], 10: [3, 4, 4, 5, 5]}
 
     def restrict_state(target_states):
         def restrict_state_decorator(func):
@@ -33,6 +40,10 @@ class Avalon(object):
                 return value
             return restrict
         return restrict_state_decorator
+
+    async def dm_users(self, dm):
+        for user in self.users:
+            await user.send(dm)
 
     @restrict_state(target_states=[0])
     async def join(self, ctx):
@@ -62,11 +73,12 @@ class Avalon(object):
     async def make_host(self, ctx):
         await self.lobby.make_host(ctx)
 
-    def start_game(self):
+    async def night(self):
         random.shuffle(self.users)
         random.shuffle(self.roles)
         for i in range(len(self.users)):
             self.players.append(Player(self, self.users[i], self.roles[i]))
+        player_order = ""
         self.state = 1
 
         self.role_config["evil"] = []
@@ -83,4 +95,11 @@ class Avalon(object):
             for player in self.players:
                 if player.role % 4 == 0: # Morgana
                     self.role_config["percival_visible"].append(player)
-        print(self.role_config)
+        for player in self.players:
+            await player.night()
+        for i in range(5): # Generate quests
+            self.quests.append(Quest(self, self.QUEST_DICT[len(self.players)][i]))
+            if i == 4 and len(self.players) >= 7:
+                self.quests[3].fail = 2
+        print(self.quests)
+        self.state = 2

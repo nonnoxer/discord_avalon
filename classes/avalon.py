@@ -101,5 +101,5 @@ class Avalon(object):
             self.quests.append(Quest(self, self.QUEST_DICT[len(self.players)][i]))
             if i == 4 and len(self.players) >= 7:
                 self.quests[3].fail = 2
-        print(self.quests)
         self.state = 2
+        self.quest = 0

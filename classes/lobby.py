@@ -15,11 +15,11 @@ class Lobby(object):
         return restrict
 
     async def join(self, ctx):
-        if ctx.author not in self.avalon.cog.players and ctx.author not in self.avalon.users and len(self.avalon.users) <= 10:
-            self.avalon.cog.players[ctx.author] = self.avalon.game_id
+        if ctx.author not in self.avalon.cog.bot.players and ctx.author not in self.avalon.users and len(self.avalon.users) <= 10:
+            self.avalon.cog.bot.players[ctx.author] = self.avalon.game_id
             self.avalon.users.append(ctx.author)
             await self.avalon.dm_users(f"{ctx.author.mention} has joined the game!\nPlayer slots: {len(self.avalon.users)} / 10")
-        elif ctx.author in self.avalon.cog.players:
+        elif ctx.author in self.avalon.cog.bot.players:
             await ctx.send("You are already in a game.")
         elif ctx.author in self.avalon.users:
             await ctx.send("You are already in the game.")
@@ -29,14 +29,14 @@ class Lobby(object):
     async def leave(self, ctx):
         if ctx.author in self.avalon.users:
             self.avalon.users.remove(ctx.author)
-            del self.avalon.cog.players[ctx.author]
+            del self.avalon.cog.bot.players[ctx.author]
             await self.avalon.dm_users(f"{ctx.author.mention} has left the game.\nPlayer slots: {len(self.avalon.users)} / 10")
             if ctx.author == self.avalon.host and len(self.avalon.users) >= 1:
                 self.avalon.host = self.avalon.users[0]
                 await self.avalon.dm_users(f"{self.avalon.host.mention} is now the host.")
             elif ctx.author == self.avalon.host:
                 await self.avalon.dm_users(f"The game is empty, closing game.")
-                del self.avalon.cog.games[self.avalon.game_id]
+                del self.avalon.cog.bot.games[self.avalon.game_id]
         else:
             await ctx.send("You are not in the game.")
 
@@ -68,11 +68,11 @@ class Lobby(object):
     async def end(self, ctx):
         await self.avalon.dm_users("The game has been ended by the host.")
         new_players = {}
-        for player, game_id in self.avalon.cog.players.items():
+        for player, game_id in self.avalon.cog.bot.players.items():
             if game_id != self.avalon.game_id:
                 new_players[player] = game_id
-        self.avalon.cog.players = new_players
-        del self.avalon.cog.games[self.avalon.game_id]
+        self.avalon.cog.bot.players = new_players
+        del self.avalon.cog.bot.games[self.avalon.game_id]
 
     @host_only
     async def add_role(self, ctx, roles):
